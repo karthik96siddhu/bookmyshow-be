@@ -4,19 +4,28 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-class Item(BaseModel):
-    name: str
-    price: float
-    is_offer: Union[bool, None] = None
+class Task(BaseModel):
+    id: int
+    title: str
+    description: Union[str, None] = None
+    completed: bool = False
 
 @app.get("/")
-def read_root():
-    return {"Hello": "World"}
+def get_status():
+    return {"status": "ok"}
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
+@app.get("/greet")
+def greet():
+    return {"message": "Welcome to FastApi development"}
 
-@app.put("/items/{item_id}")
-def update_item(item_id: int, item: Item):
-    return {"item_id": item_id, "item": item}
+@app.post("/tasks")
+def create_task(task: Task):
+    return {"message": "Task created successfully", "task": task}
+
+@app.get("/tasks")
+def get_tasks():
+    tasks = [
+        {"id": 1, "title": "Sample Task", "description": "This is a sample task", "completed": False},
+        {"id": 2, "title": "Another Task", "description": "This is another task", "completed": True}
+    ]
+    return {"tasks": tasks}
