@@ -6,7 +6,7 @@ from app.schemes.screen import ScreenCreate
 from sqlalchemy.orm import Session
 from app.core.auth import get_db
 
-router = APIRouter(prefix="/admin/screen", tags=["Screen"])
+router = APIRouter(prefix="/admin/screen", tags=["Admin - Screen"])
 
 @router.post("/")
 def create_screen(data: ScreenCreate, db: Session = Depends(get_db), current_user = Depends(require_admin)):

@@ -1,11 +1,11 @@
 from pydantic import BaseModel
 
-class TheaterCreate(BaseModel):
+class TheatreCreate(BaseModel):
     name: str
     city: str
     address: str
     
-class TheaterOut(BaseModel):
+class TheatreOut(BaseModel):
     id: int
     name: str
     city: str
