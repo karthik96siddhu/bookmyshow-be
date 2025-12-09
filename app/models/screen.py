@@ -14,3 +14,5 @@ class Screen(Base):
     # Relationship to theatre
     theatre = relationship("Theatre", back_populates="screens")
     
+    # Relationship to seats
+    seats = relationship("Seat", back_populates="screen", cascade="all, delete")
