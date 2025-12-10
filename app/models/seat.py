@@ -8,7 +8,7 @@ class Seat(Base):
     id = Column(Integer, primary_key=True, index=True)
     screen_id = Column(Integer, ForeignKey("screens.id"), nullable=False)
     
-    row = Column(String(5), nullabble=False)
+    row = Column(String(5), nullable=False)
     seat_number = Column(Integer, nullable=False)
     seat_code = Column(String(10), nullable=False)
     
