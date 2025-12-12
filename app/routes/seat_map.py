@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from app.db.database import SessionLocal
 from app.core.auth import get_db
@@ -9,7 +9,7 @@ from app.models.screen import Screen
 from app.models.seat import Seat
 from app.models.booking import Booking
 from app.models.seat_lock import SeatLock
-
+from app.schemes.seat_lock import LockSeatRequest
 router = APIRouter(
     prefix="/shows",
     tags=["User - Seat Map"]
@@ -63,4 +63,61 @@ def get_seat_map(show_id: int, db: Session = Depends(get_db)):
         "seats": seat_map
     }
 
+
+@router.post("/{show_id}/lock_seats")
+def lock_seats(show_id: int, payload: LockSeatRequest, db: Session = Depends(get_db)):
     
+    # Validate show
+    show = db.query(Show).filter(Show.id == show_id).first()
+    if not show:
+        return HTTPException(status_code=404, detail="Show not found")
+    
+    now = datetime.utcnow()
+    lock_duration = timedelta(minutes=15)
+    lock_expires = now + lock_duration
+    
+    locked_ids = []
+    
+    for seat_id in payload.seat_ids:
+        
+        # check ig seats exists
+        seat = db.query(Seat).filter(Seat.id == seat_id).first()
+        if not seat:
+            raise HTTPException(status_code=404, detail=f"Seat ID {seat_id} not found")
+        
+        # check if already booked
+        existing_booking = db.query(Booking).filter(
+            Booking.show_id == show_id,
+            Booking.seat_id == seat_id
+        ).first()
+        
+        if existing_booking:
+            raise HTTPException(status_code=400, detail=f"Seat ID {seat_id} is already booked")
+        
+        # check if locked by someone
+        existing_lock = db.query(SeatLock).filter(
+            SeatLock.show_id == show_id,
+            SeatLock.seat_id == seat_id,
+            SeatLock.locked_until > now
+        ).first()
+        
+        if existing_lock:
+            raise HTTPException(status_code=400, detail=f"Seat ID {seat_id} is already locked")
+        
+        # create new lock
+        seat_lock = SeatLock(
+            show_id=show_id,
+            seat_id=seat_id,
+            locked_until=lock_expires
+        )
+        
+        db.add(seat_lock)
+        locked_ids.append(seat_id)
+    db.commit()
+    
+    return {
+        "message": "Seats locked successfully",
+        "locked_seat_ids": locked_ids,
+        "locked_until": lock_expires.isoformat
+    }
+        
