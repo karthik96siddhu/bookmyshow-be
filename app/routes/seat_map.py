@@ -15,6 +15,17 @@ router = APIRouter(
     tags=["User - Seat Map"]
 )
 
+def cleanup_expired_locks(db: Session, show_id: int):
+    now = datetime.utcnow()
+    expired_locks = db.query(SeatLock).filter(
+        SeatLock.show_id == show_id,
+        SeatLock.locked_until <= now
+    ).all()
+    for lock in expired_locks:
+        db.delete(lock)
+    db.commit()
+
+
 @router.get("/{show_id}/seat-map")
 def get_seat_map(show_id: int, db: Session = Depends(get_db)):
     
@@ -71,9 +82,10 @@ def lock_seats(show_id: int, payload: LockSeatRequest, db: Session = Depends(get
     show = db.query(Show).filter(Show.id == show_id).first()
     if not show:
         return HTTPException(status_code=404, detail="Show not found")
+    cleanup_expired_locks(db, show_id)
     
     now = datetime.utcnow()
-    lock_duration = timedelta(minutes=15)
+    lock_duration = timedelta(minutes=5)
     lock_expires = now + lock_duration
     
     locked_ids = []
@@ -118,6 +130,6 @@ def lock_seats(show_id: int, payload: LockSeatRequest, db: Session = Depends(get
     return {
         "message": "Seats locked successfully",
         "locked_seat_ids": locked_ids,
-        "locked_until": lock_expires.isoformat
+        "locked_until": lock_expires.isoformat()
     }
         
