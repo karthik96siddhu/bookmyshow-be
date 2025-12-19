@@ -132,4 +132,54 @@ def lock_seats(show_id: int, payload: LockSeatRequest, db: Session = Depends(get
         "locked_seat_ids": locked_ids,
         "locked_until": lock_expires.isoformat()
     }
+
+
+@router.post("/{show_id}/book-seats")
+def book_seats(show_id: int, payload: LockSeatRequest, db: Session = Depends(get_db)):
+    
+    # validate show
+    show = db.query(Show).filter(Show.id == show_id).first()
+    if not show:
+        return HTTPException(status_code=404, detail="Show not found")
+    
+    now = datetime.utcnow()
+    
+    for seat_id in payload.seat_ids:
         
+        # check active lock
+        lock = db.query(SeatLock).filter(
+            SeatLock.show_id == show_id,
+            SeatLock.seat_id == seat_id,
+            SeatLock.locked_until > now
+        ).first()
+        
+        if not lock:
+            raise HTTPException(status_code=400, detail=f"Seat ID {seat_id} is not locked or lock has expired")
+        
+        # double check seat is not booked
+        existing_booking = db.query(Booking).filter(
+            Booking.show_id == show_id,
+            Booking.seat_id == seat_id
+        ).first()
+
+        if existing_booking:
+            raise HTTPException(status_code=409, detail=f"Seat ID {seat_id} is already booked")
+
+        # create booking
+        booking = Booking(
+            show_id = show_id,
+            seat_id = seat_id
+        )
+        
+        db.add(booking)
+        
+        # remove lock
+        db.delete(lock)
+    
+    db.commit()
+    
+    return {
+        "message": "Booking confirmed",
+        "show_id": show_id,
+        "booked_seat_ids": payload.seat_ids
+    }
