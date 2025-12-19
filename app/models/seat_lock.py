@@ -10,6 +10,8 @@ class SeatLock(Base):
     show_id = Column(Integer, ForeignKey("shows.id"), nullable=False)
     seat_id = Column(Integer, ForeignKey("seats.id"), nullable=False)
     locked_until = Column(DateTime, nullable=False, default=datetime.utcnow)
+    user_id = Column(Integer, nullable=False)
+    
 
 # later we will update this to auto-exiry old locks
 
