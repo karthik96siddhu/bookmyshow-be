@@ -120,7 +120,8 @@ def lock_seats(show_id: int, payload: LockSeatRequest, db: Session = Depends(get
         seat_lock = SeatLock(
             show_id=show_id,
             seat_id=seat_id,
-            locked_until=lock_expires
+            locked_until=lock_expires,
+            user_id=payload.user_id
         )
         
         db.add(seat_lock)
@@ -150,7 +151,8 @@ def book_seats(show_id: int, payload: LockSeatRequest, db: Session = Depends(get
         lock = db.query(SeatLock).filter(
             SeatLock.show_id == show_id,
             SeatLock.seat_id == seat_id,
-            SeatLock.locked_until > now
+            SeatLock.locked_until > now,
+            SeatLock.user_id == payload.user_id
         ).first()
         
         if not lock:
