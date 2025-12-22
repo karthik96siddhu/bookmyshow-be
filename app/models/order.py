@@ -11,7 +11,7 @@ class Order(Base):
     
     status = Column(String(20), nullable=False, default="PENDING")
     # PENDING | PAID | CANCELLED | FAILED
-    payment_reference = Column(String, nullable=True)
-    payment_provider = Column(String, nullable=True)
+    payment_reference = Column(String(100), nullable=True)
+    payment_provider = Column(String(50), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     
