@@ -7,4 +7,4 @@ class Booking(Base):
     id = Column(Integer, primary_key=True, index=True)
     show_id = Column(Integer, ForeignKey("shows.id"), nullable=False)
     seat_id = Column(Integer, ForeignKey("seats.id"), nullable=False)
-
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
