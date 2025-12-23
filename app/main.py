@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routes import admin_theatre, auth, screen, movie, admin_show, user_movies, admin_seat, seat_map
+from app.routes import admin_theatre, auth, screen, movie, admin_show, user_movies, admin_seat, seat_map, order
 
 app = FastAPI()
 
@@ -12,6 +12,7 @@ app.include_router(admin_show.router)
 app.include_router(user_movies.router)
 app.include_router(admin_seat.router)
 app.include_router(seat_map.router)
+app.include_router(order.router)
 
 @app.get("/")
 def root():
