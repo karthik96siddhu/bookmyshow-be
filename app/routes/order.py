@@ -65,3 +65,33 @@ def confirm_order(order_id: int, payment_reference: str, db: Session = Depends(g
         "message": "Booking confirmed",
         "order_id": order.id
     }
+
+@router.post("/orders/{order_id}/cancel")
+def cancel_order(order_id: int, db: Session = Depends(get_db)):
+    
+    # fetch order
+    order = db. query(Order).filter(Order.id == order_id).first()
+    if not order:
+        return HTTPException(status_code=404, detail="Order not found")
+    
+    # only PENDING order can be cancelled
+    if order.status != "PENDING":
+        return HTTPException(status_code=400, detail=f"Cannot cancel order with status {order.status}")
+    
+    # release seat locks
+    locks = db.query(SeatLock).filter(
+        SeatLock.show_id == order.show_id,
+        SeatLock.user_id == order.user_id
+    ).all()
+    
+    for lock in locks:
+        db.delete(lock)
+        
+    # update order status
+    order.status = "CANCELLED"
+    db.commit()
+    
+    return {
+        "message": "Order cancelled and seats released",
+        "order_id": order.id
+    }
