@@ -35,3 +35,4 @@ def downgrade():
         nullable=True
     )
 
+# we are doing this in a separate migration to avoid issues with existing data
