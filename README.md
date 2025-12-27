@@ -17,3 +17,7 @@ curl -X 'POST' \
 curl -X 'GET' \
  'http://127.0.0.1:8000/tasks' \
  -H 'accept: application/json'
+
+## command to run locally
+
+uvicorn app.main:app --reload
