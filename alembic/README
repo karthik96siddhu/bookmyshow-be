@@ -2,3 +2,6 @@ Generic single-database configuration.
 
 alembic revision --autogenerate -m "comment"
 alembic upgrade head
+
+If you get "Target database is not upto date" error, run below command
+alembic stamp head
