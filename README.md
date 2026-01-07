@@ -368,3 +368,4 @@ Guidelines for contributing to this project:
 ## 📞 Support
 
 For issues, questions, or contributions, please reach out to the development team.
+Email - karthik.shivaram.dev@gmail.com
